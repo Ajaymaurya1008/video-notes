@@ -7,11 +7,17 @@ import toast from "react-hot-toast";
 
 const App = () => {
   const [addModal, setAddModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
   const [notes, setNotes] = useState([]);
   const [timestamp, setTimestamp] = useState("");
   const [message, setMessage] = useState("");
   const [videoDetails, setVideoDetails] = useState({});
   const videoId = "TRWUSvb0uNE";
+  const [editNote, setEditNote] = useState({
+    timestamp: "",
+    message: "",
+    date: "",
+  });
   const [opts, setOpts] = useState({
     height: "760",
     width: "1450",
@@ -49,6 +55,31 @@ const App = () => {
     setMessage("");
     setTimestamp("");
     setAddModal(false);
+  };
+
+  const editNoteHandler = (e,i) => {
+    e.preventDefault();
+    const currDate = new Date();
+    const editedNote = {
+      date: currDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+      timestamp:editNote.timestamp,
+      message:editNote.message,
+    };
+      setNotes((prevNotes) => {
+        const updatedNotes = prevNotes.map((note, index) => {
+          if (index === i) {
+            return editedNote;
+          } else {
+            return note;
+          }
+        });
+        localStorage.setItem("notes", JSON.stringify(updatedNotes));
+        return updatedNotes;
+      });
+    toast.success("Note updated successfully");
+    setMessage("");
+    setTimestamp("");
+    setEditModal(false);
   };
 
   const deleteNoteHandler = (index) => {
@@ -216,13 +247,80 @@ const App = () => {
                     {note.message || "This is my first note"}
                   </div>
                   <div className="edit-del-btns mt-2 flex gap-2 justify-end font-medium items-center text-[#344054] text-[14px]">
-                    <button onClick={()=>deleteNoteHandler(index)} className="border border-[#e1e4e9] p-1 px-4 rounded-lg">
+                    <button
+                      onClick={() => deleteNoteHandler(index)}
+                      className="border border-[#e1e4e9] p-1 px-4 rounded-lg"
+                    >
                       Delete note
                     </button>
-                    <button className="border border-[#e1e4e9] p-1 px-4 rounded-lg">
+                    <button onClick={()=>{setEditModal(true),setEditNote(note)}} className="border border-[#e1e4e9] p-1 px-4 rounded-lg">
                       Edit Note
                     </button>
                   </div>
+                  {editModal ? (
+                    <div className="fixed inset-0 z-10 h-[700px]">
+                      <div
+                        className="fixed inset-0 w-full h-full bg-black opacity-40"
+                        onClick={() => setEditModal(false)}
+                      ></div>
+                      <div className="flex items-center min-h-screen px-4 py-8">
+                        <div className="relative flex justify-center items-center w-full max-w-lg mx-auto h-28 bg-white rounded-md shadow-lg">
+                          <div className="sm:w-[32rem] mx-auto my-10 overflow-hidden rounded-2xl bg-white shadow-lg sm:max-w-lg">
+                            <div className="relative bg-blue-600 py-6 pl-8 text-xl font-semibold uppercase tracking-wider text-white">
+                              Edit your note
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="absolute top-0 right-0 m-5 h-6 w-6 cursor-pointer"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                onClick={() => setEditModal(false)}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </div>
+                            <div className="space-y-4 px-8 py-10">
+                              <form
+                                onSubmit={(e) => editNoteHandler(e,index)}
+                                className="flex flex-col gap-3"
+                              >
+                                <input
+                                  type="time"
+                                  name="timestamp"
+                                  value={editNote.timestamp}
+                                  onChange={(e) => setEditNote({ ...editNote, timestamp: e.target.value })}
+                                  placeholder="Timestamp"
+                                  step="1"
+                                  className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-1/2 bg-slate-300"
+                                />
+                                <div className="join w-full">
+                                  <input
+                                    type="text"
+                                    name="message"
+                                    value={editNote.message}
+                                    onChange={(e) => setEditNote({ ...editNote, message: e.target.value })}
+                                    placeholder="Type Notes"
+                                    className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-full bg-slate-300"
+                                  />
+                                  <button
+                                    type="submit"
+                                    className="btn bg-blue-500 join-item text-[20px] text-white"
+                                  >
+                                    Submit
+                                  </button>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               );
             })
