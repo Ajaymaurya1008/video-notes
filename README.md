@@ -1,6 +1,6 @@
 # Video Notes
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+A simple web application that allows users to watch YouTube videos and take timestamped notes. Built with Next.js, React, and Tailwind CSS.
 
 ## Getting Started
 
@@ -80,6 +80,15 @@ npm run lint
 ### Deleting a Note
 
 1. Click on the "Delete Note" button next to the note.
+
+## Tech Stack and Libraries
+
+- **Framework**: Next.js
+- **Library**: React
+- **Styling**: Tailwind CSS, DaisyUI
+- **HTTP Client**: Axios
+- **Icons**: React Icons
+- **Notifications**: React Hot Toast
 
 ## Learn More
 
