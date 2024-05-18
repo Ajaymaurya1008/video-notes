@@ -1,6 +1,9 @@
 # Video Notes
 
 A simple web application that allows users to watch YouTube videos and take timestamped notes. Built with Next.js, React, and Tailwind CSS.
+# Video Notes
+
+A simple web application that allows users to watch YouTube videos and take timestamped notes. Built with Next.js, React, and Tailwind CSS.
 
 ## Getting Started
 
@@ -23,14 +26,6 @@ yarn install
 pnpm install
 # or
 bun install
-```
-
-### Environment Variables
-
-Create a `.env.local` file in the root directory and add your YouTube Data API key:
-
-```plaintext
-NEXT_PUBLIC_YOUTUBE_DATA_API_KEY=your_youtube_data_api_key
 ```
 
 ### Running the Development Server
