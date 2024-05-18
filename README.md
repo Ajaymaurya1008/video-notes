@@ -1,8 +1,39 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Video Notes
+
+A simple web application that allows users to watch YouTube videos and take timestamped notes. Built with Next.js, React, and Tailwind CSS.
 
 ## Getting Started
 
-First, run the development server:
+### Installation
+
+First, clone the repository:
+
+```bash
+git clone https://github.com/your-username/video-notes.git
+cd video-notes
+```
+
+Install the dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory and add your YouTube Data API key:
+
+```plaintext
+NEXT_PUBLIC_YOUTUBE_DATA_API_KEY=your_youtube_data_api_key
+```
+
+### Running the Development Server
 
 ```bash
 npm run dev
@@ -16,9 +47,56 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+npm run build
+```
+
+### Starting the Production Server
+
+```bash
+npm start
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+## Usage
+
+### Adding a Video
+
+1. Click on the "Change Video" button.
+2. Enter the YouTube video link.
+3. Click "Add".
+
+### Adding a Note
+
+1. Click on the "Add New Note" button.
+2. Enter the timestamp and note message.
+3. Click "Add Note".
+
+### Editing a Note
+
+1. Click on the "Edit Note" button next to the note.
+2. Modify the timestamp and message.
+3. Click "Edit Note".
+
+### Deleting a Note
+
+1. Click on the "Delete Note" button next to the note.
+
+## Tech Stack and Libraries
+
+- **Framework**: Next.js
+- **Library**: React
+- **Styling**: Tailwind CSS, DaisyUI
+- **HTTP Client**: Axios
+- **Icons**: React Icons
+- **Notifications**: React Hot Toast
 
 ## Learn More
 
