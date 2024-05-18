@@ -15,7 +15,6 @@ const App = () => {
   const [timestamp, setTimestamp] = useState("");
   const [message, setMessage] = useState("");
   const [videoDetails, setVideoDetails] = useState({});
-  // const videoId = "TRWUSvb0uNE";
   const [editNote, setEditNote] = useState({
     timestamp: "",
     message: "",
@@ -117,8 +116,12 @@ const App = () => {
 
   const updateVideoId = (e) => {
     e.preventDefault();
-    const videoId = videoUrl.split("v=")[1];
-    console.log(videoId);
+    let videoId;
+    if (videoUrl.includes("youtu.be")) {
+      videoId = videoUrl.split("youtu.be/")[1];
+    } else if (videoUrl.includes("youtube.com")) {
+      videoId = videoUrl.split("v=")[1];
+    }
     setVideoModal(false);
     setVideoUrl("");
     setVideoId(videoId);
