@@ -6,13 +6,16 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import toast from "react-hot-toast";
 
 const App = () => {
+  const [videoId, setVideoId] = useState("TRWUSvb0uNE");
+  const [videoUrl, setVideoUrl] = useState("");
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
+  const [videoModal, setVideoModal] = useState(false);
   const [notes, setNotes] = useState([]);
   const [timestamp, setTimestamp] = useState("");
   const [message, setMessage] = useState("");
   const [videoDetails, setVideoDetails] = useState({});
-  const videoId = "TRWUSvb0uNE";
+  // const videoId = "TRWUSvb0uNE";
   const [editNote, setEditNote] = useState({
     timestamp: "",
     message: "",
@@ -28,7 +31,6 @@ const App = () => {
   const player = useRef(null);
 
   const onReady = (event) => {
-    // access to player in all event handlers via event.target
     player.current = event.target;
   };
 
@@ -45,46 +47,52 @@ const App = () => {
       message,
     };
     setNotes((prevNotes) => {
-      const updatedNotes = [...prevNotes, newNote];
+      const updatedNotes = { ...prevNotes };
+      if (!updatedNotes[videoId]) {
+        updatedNotes[videoId] = [];
+      }
+      updatedNotes[videoId].push(newNote);
       localStorage.setItem("notes", JSON.stringify(updatedNotes));
       return updatedNotes;
     });
     toast.success("Note added successfully");
-    // console.log(notes);
 
     setMessage("");
     setTimestamp("");
     setAddModal(false);
   };
 
-  const editNoteHandler = (e,i) => {
+  const editNoteHandler = (e, i) => {
     e.preventDefault();
     const currDate = new Date();
     const editedNote = {
-      date: currDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-      timestamp:editNote.timestamp,
-      message:editNote.message,
+      date: currDate.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      timestamp: editNote.timestamp,
+      message: editNote.message,
     };
-      setNotes((prevNotes) => {
-        const updatedNotes = prevNotes.map((note, index) => {
-          if (index === i) {
-            return editedNote;
-          } else {
-            return note;
-          }
-        });
-        localStorage.setItem("notes", JSON.stringify(updatedNotes));
-        return updatedNotes;
-      });
+    setNotes((prevNotes) => {
+      const updatedNotes = { ...prevNotes };
+      updatedNotes[videoId][i] = editedNote;
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      return updatedNotes;
+    });
     toast.success("Note updated successfully");
     setMessage("");
     setTimestamp("");
     setEditModal(false);
   };
 
-  const deleteNoteHandler = (index) => {
+  const deleteNoteHandler = (noteIndex) => {
     setNotes((prevNotes) => {
-      const updatedNotes = prevNotes.filter((_, i) => i !== index);
+      const updatedNotes = { ...prevNotes };
+      updatedNotes[videoId].splice(noteIndex, 1);
+      if (updatedNotes[videoId].length === 0) {
+        delete updatedNotes[videoId];
+      }
       localStorage.setItem("notes", JSON.stringify(updatedNotes));
       return updatedNotes;
     });
@@ -107,8 +115,22 @@ const App = () => {
     // }));
   };
 
+  const updateVideoId = (e) => {
+    e.preventDefault();
+    const videoId = videoUrl.split("v=")[1];
+    console.log(videoId);
+    setVideoModal(false);
+    setVideoUrl("");
+    setVideoId(videoId);
+    toast.success("Video updated successfully");
+  };
+
   useEffect(() => {
-    setNotes(JSON.parse(localStorage.getItem("notes")) || []);
+    const storedNotes = JSON.parse(localStorage.getItem("notes")) || {};
+    setNotes(storedNotes);
+  }, [notes]);
+
+  useEffect(() => {
     const getVideoDetails = async () => {
       try {
         const res = await axios.get(
@@ -126,14 +148,71 @@ const App = () => {
       }
     };
     getVideoDetails();
-  }, []);
+  }, [videoId]);
 
   return (
     <div className="flex p-8 h-full bg-white flex-col">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-between items-center">
         <h1 className="text-[24px] md:text-[30px] text-[#101828] font-[600]">
           Video Player with Notes
         </h1>
+        <button
+          onClick={() => setVideoModal(true)}
+          className="border-2 border-[#e1e4e9] font-semibold flex gap-2 justify-center items-center text-[#344054] text-[16px] rounded-lg px-2 p-1"
+        >
+          Change Video
+        </button>
+        {videoModal ? (
+          <div className="fixed inset-0 z-10 h-[700px]">
+            <div
+              className="fixed inset-0 w-full h-full bg-black opacity-40"
+              onClick={() => setVideoModal(false)}
+            ></div>
+            <div className="flex items-center min-h-screen px-4 py-8">
+              <div className="relative flex justify-center items-center w-full max-w-lg mx-auto h-28 bg-white rounded-md shadow-lg">
+                <div className="sm:w-[32rem] mx-auto my-10 overflow-hidden rounded-2xl bg-white shadow-lg sm:max-w-lg">
+                  <div className="relative bg-blue-600 py-6 pl-8 md:text-xl font-semibold uppercase tracking-wider text-white">
+                    Youtube Video Link
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="absolute top-0 right-0 m-5 h-6 w-6 cursor-pointer"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      onClick={() => setVideoModal(false)}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <div className="space-y-4 px-8 py-10">
+                    <form onSubmit={updateVideoId} className=" join w-full">
+                      <input
+                        type="text"
+                        name="message"
+                        required
+                        value={videoUrl}
+                        onChange={(e) => setVideoUrl(e.target.value)}
+                        placeholder="Enter Link"
+                        className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-full bg-slate-300"
+                      />
+                      <button
+                        type="submit"
+                        className="btn bg-blue-500 join-item md:text-[20px] text-white"
+                      >
+                        Add
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
       <div className="rounded-lg video-responsive overflow-hidden ">
         <YouTube videoId={videoId} opts={opts} onReady={onReady} />
@@ -227,121 +306,124 @@ const App = () => {
             </div>
           ) : null}
         </div>
-        {notes
-          ? notes.map((note, index) => {
-              return (
-                <div key={index} className="flex mt-8 md:mt-0 flex-col gap-2">
-                  <div className="time-stamp">
-                    <p className="text-[14px] text-[#344054] font-medium">
-                      {note.date || "12 May 24"}
-                    </p>
-                    <p className="font-medium text-[#475467] text-[14px]">
-                      TimeStamp:{" "}
-                      <span
-                        onClick={() => handleTimestampClick(note.timestamp)}
-                        className="text-[#7752cb] cursor-pointer"
-                      >
-                        {note.timestamp || "01 min 30 sec"}
-                      </span>{" "}
-                    </p>
-                  </div>
-                  <div className="message text-[14px] border border-[#EAECF0] p-2 rounded-lg font-normal text-[#344054]">
-                    {note.message || "This is my first note"}
-                  </div>
-                  <div className="edit-del-btns mt-2 flex gap-2 justify-end font-medium items-center text-[#344054] text-[14px]">
-                    <button
-                      onClick={() => deleteNoteHandler(index)}
-                      className="border border-[#e1e4e9] p-1 px-4 rounded-lg"
+        {notes[videoId] &&
+          notes[videoId].map((note, index) => {
+            return (
+              <div key={index} className="flex mt-8 md:mt-0 flex-col gap-2">
+                <div className="time-stamp">
+                  <p className="text-[14px] text-[#344054] font-medium">
+                    {note.date || "12 May 24"}
+                  </p>
+                  <p className="font-medium text-[#475467] text-[14px]">
+                    TimeStamp:{" "}
+                    <span
+                      onClick={() => handleTimestampClick(note.timestamp)}
+                      className="text-[#7752cb] cursor-pointer"
                     >
-                      Delete note
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditModal(true), setEditNote(note);
-                      }}
-                      className="border border-[#e1e4e9] p-1 px-4 rounded-lg"
-                    >
-                      Edit Note
-                    </button>
-                  </div>
-                  {editModal ? (
-                    <div className="fixed inset-0 z-10 h-[700px]">
-                      <div
-                        className="fixed inset-0 w-full h-full bg-black opacity-40"
-                        onClick={() => setEditModal(false)}
-                      ></div>
-                      <div className="flex items-center min-h-screen px-4 py-8">
-                        <div className="relative flex justify-center items-center w-full max-w-lg mx-auto h-28 bg-white rounded-md shadow-lg">
-                          <div className="sm:w-[32rem] mx-auto my-10 overflow-hidden rounded-2xl bg-white shadow-lg sm:max-w-lg">
-                            <div className="relative bg-blue-600 py-6 pl-8 text-xl font-semibold uppercase tracking-wider text-white">
-                              Edit your note
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="absolute top-0 right-0 m-5 h-6 w-6 cursor-pointer"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                onClick={() => setEditModal(false)}
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </div>
-                            <div className="space-y-4 px-8 py-10">
-                              <form
-                                onSubmit={(e) => editNoteHandler(e, index)}
-                                className="flex flex-col gap-3"
-                              >
+                      {note.timestamp || "01 min 30 sec"}
+                    </span>{" "}
+                  </p>
+                </div>
+                <div className="message text-[14px] border border-[#EAECF0] p-2 rounded-lg font-normal text-[#344054]">
+                  {note.message || "This is my first note"}
+                </div>
+                <div className="edit-del-btns mt-2 flex gap-2 justify-end font-medium items-center text-[#344054] text-[14px]">
+                  <button
+                    onClick={() => deleteNoteHandler(index)}
+                    className="border border-[#e1e4e9] p-1 px-4 rounded-lg"
+                  >
+                    Delete note
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditModal(true);
+                      setEditNote({
+                        ...note,
+                        index,
+                      });
+                    }}
+                    className="border border-[#e1e4e9] p-1 px-4 rounded-lg"
+                  >
+                    Edit Note
+                  </button>
+                </div>
+                {editModal ? (
+                  <div className="fixed inset-0 z-10 h-[700px]">
+                    <div
+                      className="fixed inset-0 w-full h-full bg-black opacity-40"
+                      onClick={() => setEditModal(false)}
+                    ></div>
+                    <div className="flex items-center min-h-screen px-4 py-8">
+                      <div className="relative flex justify-center items-center w-full max-w-lg mx-auto h-28 bg-white rounded-md shadow-lg">
+                        <div className="sm:w-[32rem] mx-auto my-10 overflow-hidden rounded-2xl bg-white shadow-lg sm:max-w-lg">
+                          <div className="relative bg-blue-600 py-6 pl-8 text-xl font-semibold uppercase tracking-wider text-white">
+                            Edit your note
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="absolute top-0 right-0 m-5 h-6 w-6 cursor-pointer"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              onClick={() => setEditModal(false)}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </div>
+                          <div className="space-y-4 px-8 py-10">
+                            <form
+                              onSubmit={(e) => editNoteHandler(e, index)}
+                              className="flex flex-col gap-3"
+                            >
+                              <input
+                                type="text"
+                                name="timestamp"
+                                value={editNote.timestamp}
+                                onChange={(e) =>
+                                  setEditNote({
+                                    ...editNote,
+                                    timestamp: e.target.value,
+                                  })
+                                }
+                                placeholder="HH:MM:SS"
+                                pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+                                className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-1/2 bg-slate-300"
+                              />
+                              <div className="join w-full">
                                 <input
                                   type="text"
-                                  name="timestamp"
-                                  value={editNote.timestamp}
+                                  name="message"
+                                  value={editNote.message}
                                   onChange={(e) =>
                                     setEditNote({
                                       ...editNote,
-                                      timestamp: e.target.value,
+                                      message: e.target.value,
                                     })
                                   }
-                                  placeholder="HH:MM:SS"
-                                  pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
-                                  className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-1/2 bg-slate-300"
+                                  placeholder="Type Notes"
+                                  className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-full bg-slate-300"
                                 />
-                                <div className="join w-full">
-                                  <input
-                                    type="text"
-                                    name="message"
-                                    value={editNote.message}
-                                    onChange={(e) =>
-                                      setEditNote({
-                                        ...editNote,
-                                        message: e.target.value,
-                                      })
-                                    }
-                                    placeholder="Type Notes"
-                                    className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-full bg-slate-300"
-                                  />
-                                  <button
-                                    type="submit"
-                                    className="btn bg-blue-500 join-item md:text-[20px] text-white"
-                                  >
-                                    Edit Note
-                                  </button>
-                                </div>
-                              </form>
-                            </div>
+                                <button
+                                  type="submit"
+                                  className="btn bg-blue-500 join-item md:text-[20px] text-white"
+                                >
+                                  Edit Note
+                                </button>
+                              </div>
+                            </form>
                           </div>
                         </div>
                       </div>
                     </div>
-                  ) : null}
-                </div>
-              );
-            })
-          : null}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
       </div>
     </div>
   );
