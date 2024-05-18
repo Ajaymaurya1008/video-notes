@@ -19,8 +19,8 @@ const App = () => {
     date: "",
   });
   const [opts, setOpts] = useState({
-    height: "760",
-    width: "1450",
+    height: "100%",
+    width: "100%",
     playerVars: {
       autoplay: 0,
     },
@@ -131,11 +131,11 @@ const App = () => {
   return (
     <div className="flex p-8 h-full bg-white flex-col">
       <div className="mb-6">
-        <h1 className="text-[30px] text-[#101828] font-[600]">
+        <h1 className="text-[24px] md:text-[30px] text-[#101828] font-[600]">
           Video Player with Notes
         </h1>
       </div>
-      <div className="rounded-lg overflow-hidden">
+      <div className="rounded-lg video-responsive overflow-hidden ">
         <YouTube videoId={videoId} opts={opts} onReady={onReady} />
       </div>
       <div className="mt-5">
@@ -144,7 +144,7 @@ const App = () => {
         </h2>
       </div>
       <div className="notes flex flex-col gap-5 border-[1px] rounded-xl mt-8  p-6 ">
-        <div className=" flex justify-between border-b border-[#EAECF0] pb-6 text-black">
+        <div className=" flex flex-col md:flex-row justify-between border-b border-[#EAECF0] pb-6 text-black">
           <div className="flex flex-col gap-2">
             <p className="text-[18px] font-semibold">My notes</p>
             <p className=" text-[14px] text-[#475467] font-normal">
@@ -152,7 +152,7 @@ const App = () => {
               specific timestamp in the video.
             </p>
           </div>
-          <div className="flex justify-center items-center">
+          <div className="flex mt-3 md:mt-0 justify-center items-center">
             <button
               onClick={() => setAddModal(true)}
               className="border-2 border-[#e1e4e9] font-semibold flex gap-2 justify-center items-center text-[#344054] text-[14px] rounded-lg px-2 p-1 "
@@ -170,7 +170,7 @@ const App = () => {
                 <div className="relative flex justify-center items-center w-full max-w-lg mx-auto h-28 bg-white rounded-md shadow-lg">
                   <div className="sm:w-[32rem] mx-auto my-10 overflow-hidden rounded-2xl bg-white shadow-lg sm:max-w-lg">
                     <div className="relative bg-blue-600 py-6 pl-8 text-xl font-semibold uppercase tracking-wider text-white">
-                      Enter Notes
+                      Enter Note
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="absolute top-0 right-0 m-5 h-6 w-6 cursor-pointer"
@@ -193,28 +193,30 @@ const App = () => {
                         className="flex flex-col gap-3"
                       >
                         <input
-                          type="time"
+                          type="text"
                           name="timestamp"
+                          required
                           value={timestamp}
                           onChange={(e) => setTimestamp(e.target.value)}
-                          placeholder="Timestamp"
-                          step="1"
-                          className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-1/2 bg-slate-300"
+                          placeholder="HH:MM:SS"
+                          pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+                          className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-1/2 bg-slate-300 myTimeInput"
                         />
                         <div className="join w-full">
                           <input
                             type="text"
                             name="message"
+                            required
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Type Notes"
+                            placeholder="Type Note"
                             className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-full bg-slate-300"
                           />
                           <button
                             type="submit"
-                            className="btn bg-blue-500 join-item text-[20px] text-white"
+                            className="btn bg-blue-500 join-item md:text-[20px] text-white"
                           >
-                            Submit
+                            Add Note
                           </button>
                         </div>
                       </form>
@@ -228,7 +230,7 @@ const App = () => {
         {notes
           ? notes.map((note, index) => {
               return (
-                <div key={index} className="flex flex-col gap-2">
+                <div key={index} className="flex mt-8 md:mt-0 flex-col gap-2">
                   <div className="time-stamp">
                     <p className="text-[14px] text-[#344054] font-medium">
                       {note.date || "12 May 24"}
@@ -253,7 +255,12 @@ const App = () => {
                     >
                       Delete note
                     </button>
-                    <button onClick={()=>{setEditModal(true),setEditNote(note)}} className="border border-[#e1e4e9] p-1 px-4 rounded-lg">
+                    <button
+                      onClick={() => {
+                        setEditModal(true), setEditNote(note);
+                      }}
+                      className="border border-[#e1e4e9] p-1 px-4 rounded-lg"
+                    >
                       Edit Note
                     </button>
                   </div>
@@ -286,16 +293,21 @@ const App = () => {
                             </div>
                             <div className="space-y-4 px-8 py-10">
                               <form
-                                onSubmit={(e) => editNoteHandler(e,index)}
+                                onSubmit={(e) => editNoteHandler(e, index)}
                                 className="flex flex-col gap-3"
                               >
                                 <input
-                                  type="time"
+                                  type="text"
                                   name="timestamp"
                                   value={editNote.timestamp}
-                                  onChange={(e) => setEditNote({ ...editNote, timestamp: e.target.value })}
-                                  placeholder="Timestamp"
-                                  step="1"
+                                  onChange={(e) =>
+                                    setEditNote({
+                                      ...editNote,
+                                      timestamp: e.target.value,
+                                    })
+                                  }
+                                  placeholder="HH:MM:SS"
+                                  pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
                                   className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-1/2 bg-slate-300"
                                 />
                                 <div className="join w-full">
@@ -303,15 +315,20 @@ const App = () => {
                                     type="text"
                                     name="message"
                                     value={editNote.message}
-                                    onChange={(e) => setEditNote({ ...editNote, message: e.target.value })}
+                                    onChange={(e) =>
+                                      setEditNote({
+                                        ...editNote,
+                                        message: e.target.value,
+                                      })
+                                    }
                                     placeholder="Type Notes"
                                     className="input placeholder:text-gray-500 text-black font-medium text-[16px] join-item input-bordered w-full bg-slate-300"
                                   />
                                   <button
                                     type="submit"
-                                    className="btn bg-blue-500 join-item text-[20px] text-white"
+                                    className="btn bg-blue-500 join-item md:text-[20px] text-white"
                                   >
-                                    Submit
+                                    Edit Note
                                   </button>
                                 </div>
                               </form>
