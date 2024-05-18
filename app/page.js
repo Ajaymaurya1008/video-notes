@@ -116,15 +116,12 @@ const App = () => {
 
   const updateVideoId = (e) => {
     e.preventDefault();
-    let videoId;
-    if (videoUrl.includes("youtu.be")) {
-      videoId = videoUrl.split("youtu.be/")[1];
-    } else if (videoUrl.includes("youtube.com")) {
-      videoId = videoUrl.split("v=")[1];
-    }
+    const url = videoUrl.split(/(vi\/|v=|\/v\/|youtu\.be\/|\/embed\/)/);
+    const link =
+      url[2] !== undefined ? url[2].split(/[^0-9a-z_\-]/i)[0] : url[0];
     setVideoModal(false);
     setVideoUrl("");
-    setVideoId(videoId);
+    setVideoId(link);
     toast.success("Video updated successfully");
   };
 
