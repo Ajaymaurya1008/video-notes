@@ -1,8 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import YouTube from "react-youtube";
 import axios from "axios";
 import { IoIosAddCircleOutline } from "react-icons/io";
+import toast from "react-hot-toast";
 
 const App = () => {
   const [addModal, setAddModal] = useState(false);
@@ -18,9 +19,11 @@ const App = () => {
       autoplay: 0,
     },
   });
+  const player = useRef(null);
 
-  const handleChange = (e) => {
-    setNotes({ ...notes, [e.target.name]: e.target.value });
+  const onReady = (event) => {
+    // access to player in all event handlers via event.target
+    player.current = event.target;
   };
 
   const addNoteHandler = (e) => {
@@ -34,33 +37,49 @@ const App = () => {
       }),
       timestamp,
       message,
-      setTimestamp: "",
     };
+    setNotes((prevNotes) => {
+      const updatedNotes = [...prevNotes, newNote];
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      return updatedNotes;
+    });
+    toast.success("Note added successfully");
+    // console.log(notes);
+
     setMessage("");
     setTimestamp("");
-    setNotes([...notes, newNote]);
-    console.log(notes);
     setAddModal(false);
+  };
+
+  const deleteNoteHandler = (index) => {
+    setNotes((prevNotes) => {
+      const updatedNotes = prevNotes.filter((_, i) => i !== index);
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      return updatedNotes;
+    });
+    toast.success("Note deleted successfully");
   };
 
   const handleTimestampClick = (timestamp) => {
     const parts = timestamp.split(":");
     const seconds = +parts[0] * 60 * 60 + +parts[1] * 60 + +parts[2];
-
-    setOpts((prevOpts) => ({
-      ...prevOpts,
-      playerVars: {
-        ...prevOpts.playerVars,
-        start: seconds,
-        autoplay: 1,
-      },
-    }));
+    if (player.current) {
+      player.current.seekTo(seconds);
+    }
+    // setOpts((prevOpts) => ({
+    //   ...prevOpts,
+    //   playerVars: {
+    //     ...prevOpts.playerVars,
+    //     start: seconds,
+    //     autoplay: 1,
+    //   },
+    // }));
   };
 
   useEffect(() => {
+    setNotes(JSON.parse(localStorage.getItem("notes")) || []);
     const getVideoDetails = async () => {
       try {
-        console.log(process.env.NEXT_PUBLIC_YOUTUBE_DATA_API_KEY);
         const res = await axios.get(
           `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${process.env.NEXT_PUBLIC_YOUTUBE_DATA_API_KEY}`
         );
@@ -69,9 +88,7 @@ const App = () => {
           description: res.data.items[0].snippet.description,
         };
         if (data) {
-          console.log(data);
           setVideoDetails(data);
-          console.log(videoDetails);
         }
       } catch (error) {
         console.log(error);
@@ -88,7 +105,7 @@ const App = () => {
         </h1>
       </div>
       <div className="rounded-lg overflow-hidden">
-        <YouTube videoId={videoId} opts={opts} />
+        <YouTube videoId={videoId} opts={opts} onReady={onReady} />
       </div>
       <div className="mt-5">
         <h2 className="text-[18px] border-b pb-3 border-[#e1e4e9] text-black font-bold">
@@ -187,7 +204,10 @@ const App = () => {
                     </p>
                     <p className="font-medium text-[#475467] text-[14px]">
                       TimeStamp:{" "}
-                      <span onClick={()=>handleTimestampClick(note.timestamp)} className="text-[#7752cb] cursor-pointer">
+                      <span
+                        onClick={() => handleTimestampClick(note.timestamp)}
+                        className="text-[#7752cb] cursor-pointer"
+                      >
                         {note.timestamp || "01 min 30 sec"}
                       </span>{" "}
                     </p>
@@ -196,7 +216,7 @@ const App = () => {
                     {note.message || "This is my first note"}
                   </div>
                   <div className="edit-del-btns mt-2 flex gap-2 justify-end font-medium items-center text-[#344054] text-[14px]">
-                    <button className="border border-[#e1e4e9] p-1 px-4 rounded-lg">
+                    <button onClick={()=>deleteNoteHandler(index)} className="border border-[#e1e4e9] p-1 px-4 rounded-lg">
                       Delete note
                     </button>
                     <button className="border border-[#e1e4e9] p-1 px-4 rounded-lg">
